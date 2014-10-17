@@ -1,4 +1,4 @@
-package me.bigteddy98.mcproxy;
+package me.bigteddy98.mcproxy.protocol;
 
 /* 
  * MCProxy
@@ -18,18 +18,23 @@ package me.bigteddy98.mcproxy;
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
+import me.bigteddy98.mcproxy.ProxyLogger;
 
 public class ProxyHandlerCodex extends ChannelHandlerAdapter {
 
-	private final String hostname;
-	private final int port;
+	public final String hostname;
+	public final int port;
+	public final NetworkManager networkManager = new NetworkManager();
 
+	private volatile ProxyForwardCodex forwardCodex;
 	private volatile Channel incomingChannel;
 	private volatile Channel outgoingChannel;
 
@@ -45,10 +50,10 @@ public class ProxyHandlerCodex extends ChannelHandlerAdapter {
 		Bootstrap bootstrab = new Bootstrap();
 		bootstrab.group(incomingChannel.eventLoop());
 		bootstrab.channel(ctx.channel().getClass());
-		bootstrab.handler(new ProxyForwardCodex(incomingChannel));
+		bootstrab.handler(forwardCodex = new ProxyForwardCodex(this, incomingChannel));
 		bootstrab.option(ChannelOption.AUTO_READ, false);
 		ChannelFuture f = bootstrab.connect(hostname, port);
-		
+
 		outgoingChannel = f.channel();
 		f.addListener(new ChannelFutureListener() {
 			@Override
@@ -63,9 +68,11 @@ public class ProxyHandlerCodex extends ChannelHandlerAdapter {
 	}
 
 	@Override
-	public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {		
+	public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
 		if (outgoingChannel.isActive()) {
-			System.out.println("Sending to server " + msg.toString());
+			ByteBuf bufferOriginal = (ByteBuf) msg;
+			ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
+			this.networkManager.handleServerBoundPacket(bufferClone);
 			outgoingChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {

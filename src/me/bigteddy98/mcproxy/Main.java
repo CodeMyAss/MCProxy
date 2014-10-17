@@ -19,6 +19,7 @@ package me.bigteddy98.mcproxy;
 
 import java.util.concurrent.ThreadFactory;
 
+import me.bigteddy98.mcproxy.protocol.ConnectionInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;

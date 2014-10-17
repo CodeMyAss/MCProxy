@@ -15,20 +15,24 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy;
+package me.bigteddy98.mcproxy.protocol;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
+import me.bigteddy98.mcproxy.ProxyLogger;
 
 public class ProxyForwardCodex extends ChannelHandlerAdapter {
 
 	private final Channel inboundChannel;
+	private final ProxyHandlerCodex proxyHandlerCodex;
 
-	public ProxyForwardCodex(Channel inboundChannel) {
+	public ProxyForwardCodex(ProxyHandlerCodex proxyHandlerCodex, Channel inboundChannel) {
+		this.proxyHandlerCodex = proxyHandlerCodex;
 		this.inboundChannel = inboundChannel;
 	}
 
@@ -40,8 +44,10 @@ public class ProxyForwardCodex extends ChannelHandlerAdapter {
 
 	@Override
 	public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
-		System.out.println("Sending to client " + msg.toString());
-		
+		ByteBuf bufferOriginal = (ByteBuf) msg;
+		ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
+		this.proxyHandlerCodex.networkManager.handleClientBoundPacket(bufferClone);
+
 		ChannelFuture handler = inboundChannel.writeAndFlush(msg);
 		handler.addListener(new ChannelFutureListener() {
 			@Override
@@ -54,7 +60,7 @@ public class ProxyForwardCodex extends ChannelHandlerAdapter {
 			}
 		});
 	}
-	
+
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		ProxyLogger.exception(cause);

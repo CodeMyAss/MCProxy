@@ -15,24 +15,8 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy.entity;
+package me.bigteddy98.mcproxy.protocol.packet;
 
-import java.util.HashMap;
-import java.util.Map;
+public class Packet {
 
-public class DataWatcher {
-
-	private final Map<Integer, Object> watched = new HashMap<Integer, Object>();
-
-	public void watch(int index, Object value) {
-		synchronized (watched) {
-			this.watched.put(index, value);
-		}
-	}
-
-	public Map<Integer, Object> getWatchedCopy() {
-		synchronized (watched) {
-			return new HashMap<>(watched);
-		}
-	}
 }

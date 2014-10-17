@@ -25,9 +25,6 @@ public class NetworkManager {
 	private volatile ConnectionState currentState = ConnectionState.HANDSHAKE;
 	private volatile int protocolId;
 
-	public NetworkManager() {
-	}
-
 	public synchronized void handleServerBoundPacket(ByteBuf bufferClone) {
 		PacketDataWrapper wrapper = new PacketDataWrapper(bufferClone);
 		while (true) {
@@ -50,7 +47,6 @@ public class NetworkManager {
 	}
 
 	public synchronized void handleClientBoundPacket(ByteBuf bufferClone) {
-
 		// ProxyLogger.debug("server --> client");
 	}
 }

@@ -17,13 +17,6 @@
  */
 package me.bigteddy98.mcproxy.protocol.packet;
 
-import me.bigteddy98.mcproxy.protocol.NetworkManager;
+public class PacketReceiveEvent {
 
-public abstract class Packet {
-
-	public abstract void read(PacketDataWrapper wrapper);
-
-	public abstract void write(PacketDataWrapper wrapper);
-
-	public abstract void onReceive(NetworkManager networkManager, PacketReceiveEvent event);
 }

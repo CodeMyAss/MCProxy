@@ -18,35 +18,69 @@
 package me.bigteddy98.mcproxy.protocol;
 
 import io.netty.buffer.ByteBuf;
+import me.bigteddy98.mcproxy.ProxyLogger;
+import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
+import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
 
 public class NetworkManager {
 
-	private volatile ConnectionState currentState = ConnectionState.HANDSHAKE;
-	private volatile int protocolId;
+	public final ProxyHandlerCodex proxyHandlerCodex;
+	
+	public volatile ConnectionState currentState = ConnectionState.HANDSHAKE;
+	public volatile int protocolId;
 
-	public synchronized void handleServerBoundPacket(ByteBuf bufferClone) {
+	public NetworkManager(ProxyHandlerCodex proxyHandlerCodex) {
+		this.proxyHandlerCodex = proxyHandlerCodex;
+	}
+
+	public synchronized ByteBuf handleServerBoundPacket(ByteBuf originalBuffer, ByteBuf bufferClone) throws InstantiationException, IllegalAccessException {
 		PacketDataWrapper wrapper = new PacketDataWrapper(bufferClone);
 		while (true) {
 			if (bufferClone.readableBytes() == 0) {
-				return;
+				return originalBuffer;
 			}
 			wrapper.readVarInt();
 			int id = wrapper.readVarInt();
-			if (currentState == ConnectionState.HANDSHAKE && id == 0x00) {
-				protocolId = wrapper.readVarInt();
-				wrapper.readString();
-				wrapper.readUnsignedShort();
-				currentState = ConnectionState.fromId(wrapper.readVarInt());
-				continue;
-			} else {
-				return;
+
+			Packet packet = PacketRegistry.getServerBoundPacket(id, this.currentState).newInstance();
+			ProxyLogger.debug("Handled " + packet);
+			if (packet == null) {
+				try {
+					throw new RuntimeException("Unable to find serverbound packet with ID " + id + " and connectionState " + this.currentState);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return originalBuffer;
 			}
+			packet.read(wrapper);
+			packet.onReceive(this, new PacketReceiveEvent());
 		}
 		// ProxyLogger.debug("client --> server");
 	}
 
-	public synchronized void handleClientBoundPacket(ByteBuf bufferClone) {
+	public synchronized ByteBuf handleClientBoundPacket(ByteBuf originalBuffer, ByteBuf bufferClone) throws InstantiationException, IllegalAccessException {		
+		PacketDataWrapper wrapper = new PacketDataWrapper(bufferClone);
+		while (true) {
+			if (bufferClone.readableBytes() == 0) {
+				return originalBuffer;
+			}
+			wrapper.readVarInt();
+			int id = wrapper.readVarInt();
+
+			Packet packet = PacketRegistry.getClientBoundPacket(id, this.currentState).newInstance();
+			ProxyLogger.debug("Handled " + packet);
+			if (packet == null) {
+				try {
+					throw new RuntimeException("Unable to find clientbound packet with ID " + id + " and connectionState " + this.currentState);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return originalBuffer;
+			}
+			packet.read(wrapper);
+			packet.onReceive(this, new PacketReceiveEvent());
+		}
 		// ProxyLogger.debug("server --> client");
 	}
 }

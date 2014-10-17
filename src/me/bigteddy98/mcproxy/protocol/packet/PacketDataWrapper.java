@@ -285,7 +285,7 @@ public class PacketDataWrapper {
 				int i = (5 << 5 | watch.getKey() & 0x1F) & 0xFF;
 				this.writeByte(i);
 				this.writeItemStack((ItemStack) watch.getValue());
-			//} else if (watch.getValue() instanceof Vector) { TODO currently not implemented
+			//} else if (watch.getValue() instanceof Vector) { currently not implemented
 				
 			} else {
 				throw new UnsupportedEncodingException("Type " + watch.getValue().getClass() + " cannot be part of a datawatcher.");

@@ -32,7 +32,7 @@ public class ProxyHandlerCodex extends ChannelHandlerAdapter {
 
 	public final String hostname;
 	public final int port;
-	public final NetworkManager networkManager = new NetworkManager();
+	public final NetworkManager networkManager = new NetworkManager(this);
 
 	private volatile ProxyForwardCodex forwardCodex;
 	private volatile Channel incomingChannel;
@@ -73,7 +73,7 @@ public class ProxyHandlerCodex extends ChannelHandlerAdapter {
 			try {
 				ByteBuf bufferOriginal = (ByteBuf) msg;
 				ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
-				this.networkManager.handleServerBoundPacket(bufferClone);
+				msg = this.networkManager.handleServerBoundPacket((ByteBuf) msg, bufferClone);
 				bufferClone.release();
 			} catch (Exception e) {
 				e.printStackTrace();

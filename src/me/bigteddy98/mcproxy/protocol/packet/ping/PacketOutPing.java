@@ -15,15 +15,43 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy.protocol.packet;
+package me.bigteddy98.mcproxy.protocol.packet.ping;
 
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
+import me.bigteddy98.mcproxy.protocol.packet.Packet;
+import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
+import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
 
-public abstract class Packet {
+public class PacketOutPing extends Packet {
 
-	public abstract void read(PacketDataWrapper wrapper);
+	private long time;
 
-	public abstract void write(PacketDataWrapper wrapper);
+	public PacketOutPing() {}
 
-	public abstract void onReceive(NetworkManager networkManager, PacketReceiveEvent event);
+	public PacketOutPing(long time) {
+		this.time = time;
+	}
+
+	@Override
+	public void read(PacketDataWrapper wrapper) {
+		this.time = wrapper.readLong();
+	}
+
+	@Override
+	public void write(PacketDataWrapper wrapper) {
+		wrapper.writeLong(time);
+	}
+
+	@Override
+	public void onReceive(NetworkManager networkManager, PacketReceiveEvent event) {
+		// TODO
+	}
+
+	public long getTime() {
+		return time;
+	}
+
+	public void setTime(long time) {
+		this.time = time;
+	}
 }

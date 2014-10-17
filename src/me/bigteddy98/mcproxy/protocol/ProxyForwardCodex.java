@@ -47,7 +47,7 @@ public class ProxyForwardCodex extends ChannelHandlerAdapter {
 		ByteBuf bufferOriginal = (ByteBuf) msg;
 		try {
 			ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
-			this.proxyHandlerCodex.networkManager.handleClientBoundPacket(bufferClone);
+			msg = this.proxyHandlerCodex.networkManager.handleClientBoundPacket((ByteBuf) msg, bufferClone);
 			bufferClone.release();
 		} catch (Exception e) {
 			e.printStackTrace();

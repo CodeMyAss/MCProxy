@@ -15,15 +15,29 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy.protocol.packet;
+package me.bigteddy98.mcproxy.protocol.packet.ping;
 
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
+import me.bigteddy98.mcproxy.protocol.packet.Packet;
+import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
+import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
 
-public abstract class Packet {
+public class PacketInRequest extends Packet {
 
-	public abstract void read(PacketDataWrapper wrapper);
+	//NO DATA
+	
+	@Override
+	public void read(PacketDataWrapper wrapper) {
+		
+	}
 
-	public abstract void write(PacketDataWrapper wrapper);
+	@Override
+	public void write(PacketDataWrapper wrapper) {
+		
+	}
 
-	public abstract void onReceive(NetworkManager networkManager, PacketReceiveEvent event);
+	@Override
+	public void onReceive(NetworkManager networkManager, PacketReceiveEvent event) {
+		// TODO
+	}
 }

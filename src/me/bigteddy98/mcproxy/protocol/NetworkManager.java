@@ -17,18 +17,40 @@
  */
 package me.bigteddy98.mcproxy.protocol;
 
-import me.bigteddy98.mcproxy.ProxyLogger;
 import io.netty.buffer.ByteBuf;
+import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
 
 public class NetworkManager {
 
-	public void handleServerBoundPacket(ByteBuf bufferClone) {
-		// TODO
-		ProxyLogger.debug("client --> server");
+	private volatile ConnectionState currentState = ConnectionState.HANDSHAKE;
+	private volatile int protocolId;
+
+	public NetworkManager() {
 	}
 
-	public void handleClientBoundPacket(ByteBuf bufferClone) {
-		// TODO
-		ProxyLogger.debug("server --> client");
+	public synchronized void handleServerBoundPacket(ByteBuf bufferClone) {
+		PacketDataWrapper wrapper = new PacketDataWrapper(bufferClone);
+		while (true) {
+			if (bufferClone.readableBytes() == 0) {
+				return;
+			}
+			wrapper.readVarInt();
+			int id = wrapper.readVarInt();
+			if (currentState == ConnectionState.HANDSHAKE && id == 0x00) {
+				protocolId = wrapper.readVarInt();
+				wrapper.readString();
+				wrapper.readUnsignedShort();
+				currentState = ConnectionState.fromId(wrapper.readVarInt());
+				continue;
+			} else {
+				return;
+			}
+		}
+		// ProxyLogger.debug("client --> server");
+	}
+
+	public synchronized void handleClientBoundPacket(ByteBuf bufferClone) {
+
+		// ProxyLogger.debug("server --> client");
 	}
 }

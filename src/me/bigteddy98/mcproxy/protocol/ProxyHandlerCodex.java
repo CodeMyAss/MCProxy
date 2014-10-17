@@ -70,9 +70,14 @@ public class ProxyHandlerCodex extends ChannelHandlerAdapter {
 	@Override
 	public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
 		if (outgoingChannel.isActive()) {
-			ByteBuf bufferOriginal = (ByteBuf) msg;
-			ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
-			this.networkManager.handleServerBoundPacket(bufferClone);
+			try {
+				ByteBuf bufferOriginal = (ByteBuf) msg;
+				ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
+				this.networkManager.handleServerBoundPacket(bufferClone);
+				bufferClone.release();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			outgoingChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {

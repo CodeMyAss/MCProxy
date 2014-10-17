@@ -49,7 +49,7 @@ public class Main {
 	}
 
 	public void run() throws Exception {
-		ProxyLogger.info("Starting " + NAME + " version " + VERSION + " developed by " + AUTHOR + "...");
+		ProxyLogger.info("Starting " + NAME + " version " + VERSION + " developed by " + AUTHOR + "!");
 
 		final ThreadGroup nettyListeners = new ThreadGroup(Thread.currentThread().getThreadGroup(), "Netty Listeners");
 		new Thread(nettyListeners, new Runnable() {

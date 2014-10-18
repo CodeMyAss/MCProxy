@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketInHandShake;
 import me.bigteddy98.mcproxy.protocol.packet.login.PacketInLoginStart;
@@ -71,7 +72,8 @@ public class PacketRegistry {
 		} else if (state == ConnectionState.LOGIN) {
 			return LOGIN_OUT.get(id);
 		}
-		throw new RuntimeException("Unknown packet ID " + id + " with connectionState " + state);
+		ProxyLogger.warn("Unknown clientBound packet ID 0x" + Integer.toHexString(id) + " with connectionState " + state);
+		return null;
 	}
 
 	public static Class<? extends Packet> getServerBoundPacket(int id, ConnectionState state) {
@@ -84,6 +86,7 @@ public class PacketRegistry {
 		} else if (state == ConnectionState.LOGIN) {
 			return LOGIN_IN.get(id);
 		}
-		throw new RuntimeException("Unknown packet ID " + id + " with connectionState " + state);
+		ProxyLogger.warn("Unknown serverBound packet ID 0x" + Integer.toHexString(id) + " with connectionState " + state);
+		return null;
 	}
 }

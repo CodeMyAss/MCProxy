@@ -15,17 +15,23 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy.protocol.packet;
+package me.bigteddy98.mcproxy.protocol;
 
-import me.bigteddy98.mcproxy.protocol.NetworkManager;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
 
-public abstract class Packet {
+public class ClientboundConnectionInitializer extends ChannelInitializer<SocketChannel> {
 
-	public abstract void read(PacketDataWrapper wrapper);
+	private final String hostname;
+	private final int port;
 
-	public abstract void write(PacketDataWrapper wrapper);
+	public ClientboundConnectionInitializer(String hostname, int port) {
+		this.hostname = hostname;
+		this.port = port;
+	}
 
-	public abstract void onReceive(NetworkManager networkManager, PacketReceiveEvent event);
-
-	public void onSend(NetworkManager networkManager) {}
+	@Override
+	public void initChannel(SocketChannel ch) throws Exception {
+		ch.pipeline().addLast("clientbound_proxy_codex", new ClientToProxyHandler(hostname, port));
+	}
 }

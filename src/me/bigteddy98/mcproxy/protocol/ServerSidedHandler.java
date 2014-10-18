@@ -24,20 +24,25 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import me.bigteddy98.mcproxy.ProxyLogger;
 
-public class ProxyForwardCodex extends ChannelHandlerAdapter {
+import java.util.List;
+
+import me.bigteddy98.mcproxy.ProxyLogger;
+import me.bigteddy98.mcproxy.protocol.packet.Packet;
+
+public class ServerSidedHandler extends ChannelHandlerAdapter {
 
 	private final Channel inboundChannel;
-	private final ProxyHandlerCodex proxyHandlerCodex;
+	private final NetworkManager networkManager;
 
-	public ProxyForwardCodex(ProxyHandlerCodex proxyHandlerCodex, Channel inboundChannel) {
-		this.proxyHandlerCodex = proxyHandlerCodex;
+	public ServerSidedHandler(NetworkManager networkManager, Channel inboundChannel) {
+		this.networkManager = networkManager;
 		this.inboundChannel = inboundChannel;
 	}
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		networkManager.serversideHandler = ctx.pipeline();
 		ctx.read();
 		ctx.write(Unpooled.EMPTY_BUFFER);
 	}
@@ -45,17 +50,16 @@ public class ProxyForwardCodex extends ChannelHandlerAdapter {
 	@Override
 	public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
 		ByteBuf bufferOriginal = (ByteBuf) msg;
-		try {
-			ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
-			msg = this.proxyHandlerCodex.networkManager.handleClientBoundPacket((ByteBuf) msg, bufferClone);
-			bufferClone.release();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
+		final List<Packet> packets = this.networkManager.handleClientBoundPackets((ByteBuf) msg, bufferClone);
+		bufferClone.release();
 
 		inboundChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
 			@Override
 			public void operationComplete(ChannelFuture future) throws Exception {
+				for (Packet packet : packets) {
+					packet.onSend(networkManager);
+				}
 				if (future.isSuccess()) {
 					ctx.channel().read();
 				} else {

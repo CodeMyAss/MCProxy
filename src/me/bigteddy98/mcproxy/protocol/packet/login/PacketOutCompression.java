@@ -27,7 +27,8 @@ public class PacketOutCompression extends Packet {
 
 	private int threshold;
 
-	public PacketOutCompression() {}
+	public PacketOutCompression() {
+	}
 
 	public PacketOutCompression(int threshold) {
 		this.threshold = threshold;
@@ -46,7 +47,28 @@ public class PacketOutCompression extends Packet {
 	@Override
 	public void onReceive(NetworkManager networkManager, PacketReceiveEvent event) {
 		networkManager.compressionThreshold = this.threshold;
+		if (this.threshold != -1) {
+			if(networkManager.hasCompressionEnabled){
+				return;
+			}
+			networkManager.enableServerSideCompression();
+			networkManager.hasCompressionEnabled = true;
+		} else {
+			networkManager.hasCompressionEnabled = false;
+			//TODO disable compression
+		}
 		ProxyLogger.info("Compression threshold is now set to " + this.threshold);
+	}
+	
+	@Override
+	public void onSend(NetworkManager networkManager) {
+		if (this.threshold != -1) {
+			networkManager.enableClientSideCompression();
+			networkManager.hasCompressionEnabled = true;
+		} else {
+			networkManager.hasCompressionEnabled = false;
+			//TODO disable compression
+		}
 	}
 
 	public int getThreshold() {

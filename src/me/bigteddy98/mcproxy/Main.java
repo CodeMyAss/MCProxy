@@ -19,7 +19,7 @@ package me.bigteddy98.mcproxy;
 
 import java.util.concurrent.ThreadFactory;
 
-import me.bigteddy98.mcproxy.protocol.ConnectionInitializer;
+import me.bigteddy98.mcproxy.protocol.ClientboundConnectionInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -88,7 +88,7 @@ public class Main {
 					ServerBootstrap bootstrab = new ServerBootstrap();
 					bootstrab.group(bossGroup, workerGroup);
 					bootstrab.channel(NioServerSocketChannel.class);
-					bootstrab.childHandler(new ConnectionInitializer("localhost", toPort));
+					bootstrab.childHandler(new ClientboundConnectionInitializer("localhost", toPort));
 					bootstrab.childOption(ChannelOption.AUTO_READ, false);
 					bootstrab.bind(fromPort).sync().channel().closeFuture().sync();
 				} catch (InterruptedException e) {

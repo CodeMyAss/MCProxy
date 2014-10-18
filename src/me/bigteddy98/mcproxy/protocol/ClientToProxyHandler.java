@@ -17,6 +17,8 @@
  */
 package me.bigteddy98.mcproxy.protocol;
 
+import java.util.List;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -27,18 +29,19 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import me.bigteddy98.mcproxy.ProxyLogger;
+import me.bigteddy98.mcproxy.protocol.packet.Packet;
 
-public class ProxyHandlerCodex extends ChannelHandlerAdapter {
+public class ClientToProxyHandler extends ChannelHandlerAdapter {
 
 	public final String hostname;
 	public final int port;
 	public final NetworkManager networkManager = new NetworkManager(this);
 
-	public volatile ProxyForwardCodex forwardCodex;
+	public volatile ServerboundConnectionInitializer serverboundConnectionInitializer;
 	public volatile Channel incomingChannel;
 	public volatile Channel outgoingChannel;
 
-	public ProxyHandlerCodex(String hostname, int port) {
+	public ClientToProxyHandler(String hostname, int port) {
 		this.hostname = hostname;
 		this.port = port;
 	}
@@ -46,11 +49,12 @@ public class ProxyHandlerCodex extends ChannelHandlerAdapter {
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		incomingChannel = ctx.channel();
+		networkManager.clientsideHandler = ctx.pipeline();
 
 		Bootstrap bootstrab = new Bootstrap();
 		bootstrab.group(incomingChannel.eventLoop());
 		bootstrab.channel(ctx.channel().getClass());
-		bootstrab.handler(forwardCodex = new ProxyForwardCodex(this, incomingChannel));
+		bootstrab.handler(serverboundConnectionInitializer = new ServerboundConnectionInitializer(networkManager, incomingChannel));
 		bootstrab.option(ChannelOption.AUTO_READ, false);
 		ChannelFuture f = bootstrab.connect(hostname, port);
 
@@ -70,17 +74,16 @@ public class ProxyHandlerCodex extends ChannelHandlerAdapter {
 	@Override
 	public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
 		if (outgoingChannel.isActive()) {
-			try {
-				ByteBuf bufferOriginal = (ByteBuf) msg;
-				ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
-				msg = this.networkManager.handleServerBoundPacket((ByteBuf) msg, bufferClone);
-				bufferClone.release();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			ByteBuf bufferOriginal = (ByteBuf) msg;
+			ByteBuf bufferClone = Unpooled.copiedBuffer(bufferOriginal);
+			final List<Packet> packets = this.networkManager.handleServerBoundPackets((ByteBuf) msg, bufferClone);
+			bufferClone.release();
 			outgoingChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {
+					for (Packet packet : packets) {
+						packet.onSend(networkManager);
+					}
 					if (future.isSuccess()) {
 						ctx.channel().read();
 					} else {

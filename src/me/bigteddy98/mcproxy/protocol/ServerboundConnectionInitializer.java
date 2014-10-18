@@ -17,21 +17,22 @@
  */
 package me.bigteddy98.mcproxy.protocol;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 
-public class ConnectionInitializer extends ChannelInitializer<SocketChannel> {
+public class ServerboundConnectionInitializer extends ChannelInitializer<SocketChannel> {
 
-	private final String hostname;
-	private final int port;
+	private final NetworkManager networkManager;
+	private final Channel inboundChannel;
 
-	public ConnectionInitializer(String hostname, int port) {
-		this.hostname = hostname;
-		this.port = port;
+	public ServerboundConnectionInitializer(NetworkManager networkManager, Channel inboundChannel) {
+		this.networkManager = networkManager;
+		this.inboundChannel = inboundChannel;
 	}
 
 	@Override
-	public void initChannel(SocketChannel ch) throws Exception {
-		ch.pipeline().addLast("main_proxy_codex", new ProxyHandlerCodex(hostname, port));
+	protected void initChannel(SocketChannel ch) throws Exception {
+		ch.pipeline().addLast("serverbound_proxy_codex", new ServerSidedHandler(networkManager, inboundChannel));
 	}
 }

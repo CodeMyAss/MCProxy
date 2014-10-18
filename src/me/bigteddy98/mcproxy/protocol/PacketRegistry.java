@@ -23,6 +23,9 @@ import java.util.Map;
 
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketInHandShake;
+import me.bigteddy98.mcproxy.protocol.packet.login.PacketInLoginStart;
+import me.bigteddy98.mcproxy.protocol.packet.login.PacketOutCompression;
+import me.bigteddy98.mcproxy.protocol.packet.login.PacketOutLoginSucces;
 import me.bigteddy98.mcproxy.protocol.packet.ping.PacketInPing;
 import me.bigteddy98.mcproxy.protocol.packet.ping.PacketInRequest;
 import me.bigteddy98.mcproxy.protocol.packet.ping.PacketOutPing;
@@ -47,9 +50,26 @@ public class PacketRegistry {
 		STATUS_OUT = Collections.unmodifiableMap(map);
 	}
 
+	private static Map<Integer, Class<? extends Packet>> LOGIN_IN;
+	static {
+		Map<Integer, Class<? extends Packet>> map = new HashMap<>();
+		map.put(0x00, PacketInLoginStart.class);
+		LOGIN_IN = Collections.unmodifiableMap(map);
+	}
+
+	private static Map<Integer, Class<? extends Packet>> LOGIN_OUT;
+	static {
+		Map<Integer, Class<? extends Packet>> map = new HashMap<>();
+		map.put(0x02, PacketOutLoginSucces.class);
+		map.put(0x03, PacketOutCompression.class);
+		LOGIN_OUT = Collections.unmodifiableMap(map);
+	}
+
 	public static Class<? extends Packet> getClientBoundPacket(int id, ConnectionState state) {
 		if (state == ConnectionState.STATUS) {
 			return STATUS_OUT.get(id);
+		} else if (state == ConnectionState.LOGIN) {
+			return LOGIN_OUT.get(id);
 		}
 		throw new RuntimeException("Unknown packet ID " + id + " with connectionState " + state);
 	}
@@ -61,6 +81,8 @@ public class PacketRegistry {
 			}
 		} else if (state == ConnectionState.STATUS) {
 			return STATUS_IN.get(id);
+		} else if (state == ConnectionState.LOGIN) {
+			return LOGIN_IN.get(id);
 		}
 		throw new RuntimeException("Unknown packet ID " + id + " with connectionState " + state);
 	}

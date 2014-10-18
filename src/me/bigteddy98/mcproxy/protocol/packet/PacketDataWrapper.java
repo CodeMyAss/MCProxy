@@ -322,6 +322,10 @@ public class PacketDataWrapper {
 		this.writeLong(uuid.getMostSignificantBits());
 		this.writeLong(uuid.getLeastSignificantBits());
 	}
+	
+	public UUID readUUID(){
+		return new UUID(this.readLong(), this.readLong());
+	}
 
 	public void writeDouble(double value) {
 		this.buffer.writeDouble(value);

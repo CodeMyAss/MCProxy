@@ -34,9 +34,9 @@ public class ProxyHandlerCodex extends ChannelHandlerAdapter {
 	public final int port;
 	public final NetworkManager networkManager = new NetworkManager(this);
 
-	private volatile ProxyForwardCodex forwardCodex;
-	private volatile Channel incomingChannel;
-	private volatile Channel outgoingChannel;
+	public volatile ProxyForwardCodex forwardCodex;
+	public volatile Channel incomingChannel;
+	public volatile Channel outgoingChannel;
 
 	public ProxyHandlerCodex(String hostname, int port) {
 		this.hostname = hostname;

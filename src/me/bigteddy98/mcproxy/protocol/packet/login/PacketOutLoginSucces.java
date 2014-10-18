@@ -15,43 +15,58 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy.protocol.packet.ping;
+package me.bigteddy98.mcproxy.protocol.packet.login;
 
+import java.util.UUID;
+
+import me.bigteddy98.mcproxy.protocol.ConnectionState;
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
 import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
 
-public class PacketInPing extends Packet {
+public class PacketOutLoginSucces extends Packet {
 
-	private long time;
+	private UUID uuid;
+	private String username;
 
-	public PacketInPing() {}
+	public PacketOutLoginSucces() {}
 
-	public PacketInPing(long time) {
-		this.time = time;
+	public PacketOutLoginSucces(UUID uuid, String username) {
+		this.uuid = uuid;
+		this.username = username;
 	}
 
 	@Override
 	public void read(PacketDataWrapper wrapper) {
-		this.time = wrapper.readLong();
+		this.uuid = wrapper.readUUID();
+		this.username = wrapper.readString();
 	}
 
 	@Override
 	public void write(PacketDataWrapper wrapper) {
-		wrapper.writeLong(time);
+		wrapper.writeUUID(uuid);
+		wrapper.writeString(username);
 	}
 
 	@Override
 	public void onReceive(NetworkManager networkManager, PacketReceiveEvent event) {
-		// TODO
+		networkManager.currentState = ConnectionState.PLAY;
 	}
 
-	public long getTime() {
-		return time;
+	public UUID getUuid() {
+		return uuid;
 	}
 
-	public void setTime(long time) {
-		this.time = time;
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 }

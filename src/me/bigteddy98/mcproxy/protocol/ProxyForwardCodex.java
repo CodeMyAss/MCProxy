@@ -53,8 +53,7 @@ public class ProxyForwardCodex extends ChannelHandlerAdapter {
 			e.printStackTrace();
 		}
 
-		ChannelFuture handler = inboundChannel.writeAndFlush(msg);
-		handler.addListener(new ChannelFutureListener() {
+		inboundChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
 			@Override
 			public void operationComplete(ChannelFuture future) throws Exception {
 				if (future.isSuccess()) {

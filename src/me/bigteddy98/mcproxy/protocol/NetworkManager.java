@@ -18,69 +18,106 @@
 package me.bigteddy98.mcproxy.protocol;
 
 import io.netty.buffer.ByteBuf;
+
+import java.math.BigInteger;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
+
 import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
 import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
+import me.bigteddy98.mcproxy.protocol.packet.login.PacketOutCompression;
 
 public class NetworkManager {
 
 	public final ProxyHandlerCodex proxyHandlerCodex;
-	
+
 	public volatile ConnectionState currentState = ConnectionState.HANDSHAKE;
 	public volatile int protocolId;
+
+	public Deflater deflater = new Deflater();
+	public Inflater inflater = new Inflater();
+	public int compressionThreshold = -1;
 
 	public NetworkManager(ProxyHandlerCodex proxyHandlerCodex) {
 		this.proxyHandlerCodex = proxyHandlerCodex;
 	}
 
 	public synchronized ByteBuf handleServerBoundPacket(ByteBuf originalBuffer, ByteBuf bufferClone) throws InstantiationException, IllegalAccessException {
+		if (bufferClone.readableBytes() == 0) {
+			return originalBuffer;
+		}
 		PacketDataWrapper wrapper = new PacketDataWrapper(bufferClone);
-		while (true) {
-			if (bufferClone.readableBytes() == 0) {
-				return originalBuffer;
+		if (this.compressionThreshold != -1) {
+			try {
+				wrapper = new PacketDataWrapper(CompressionUtils.decompress(this, bufferClone));
+			} catch (DataFormatException e) {
+				e.printStackTrace();
 			}
-			wrapper.readVarInt();
-			int id = wrapper.readVarInt();
-
-			Packet packet = PacketRegistry.getServerBoundPacket(id, this.currentState).newInstance();
-			ProxyLogger.debug("Handled " + packet);
-			if (packet == null) {
-				try {
-					throw new RuntimeException("Unable to find serverbound packet with ID " + id + " and connectionState " + this.currentState);
-				} catch (Exception e) {
-					e.printStackTrace();
+		}
+		wrapper.readVarInt();
+		boolean secondPacket = false;
+		while (bufferClone.readableBytes() != 0) {
+			if (secondPacket) {
+				if (this.compressionThreshold == -1) {
+					wrapper.readVarInt();
 				}
+			}
+			int id = wrapper.readVarInt();
+			Class<? extends Packet> clazz = PacketRegistry.getServerBoundPacket(id, this.currentState);
+			if (clazz == null) {
+				ProxyLogger.warn("Unknown serverBound packet with ID 0x" + Integer.toHexString(id) + " and state " + this.currentState);
 				return originalBuffer;
 			}
+			Packet packet = clazz.newInstance();
+			ProxyLogger.debug("Handled " + packet);
 			packet.read(wrapper);
 			packet.onReceive(this, new PacketReceiveEvent());
+			if (packet instanceof PacketOutCompression) {
+				return originalBuffer;
+			}
+			secondPacket = true;
 		}
-		// ProxyLogger.debug("client --> server");
+		return originalBuffer;
 	}
 
-	public synchronized ByteBuf handleClientBoundPacket(ByteBuf originalBuffer, ByteBuf bufferClone) throws InstantiationException, IllegalAccessException {		
+	public synchronized ByteBuf handleClientBoundPacket(ByteBuf originalBuffer, ByteBuf bufferClone) throws InstantiationException, IllegalAccessException {
+		if (bufferClone.readableBytes() == 0) {
+			return originalBuffer;
+		}
 		PacketDataWrapper wrapper = new PacketDataWrapper(bufferClone);
-		while (true) {
-			if (bufferClone.readableBytes() == 0) {
-				return originalBuffer;
+		if (this.compressionThreshold != -1) {
+			try {
+				wrapper = new PacketDataWrapper(CompressionUtils.decompress(this, bufferClone));
+			} catch (DataFormatException e) {
+				e.printStackTrace();
 			}
-			wrapper.readVarInt();
-			int id = wrapper.readVarInt();
-
-			Packet packet = PacketRegistry.getClientBoundPacket(id, this.currentState).newInstance();
-			ProxyLogger.debug("Handled " + packet);
-			if (packet == null) {
-				try {
-					throw new RuntimeException("Unable to find clientbound packet with ID " + id + " and connectionState " + this.currentState);
-				} catch (Exception e) {
-					e.printStackTrace();
+		}
+		wrapper.readVarInt();
+		boolean secondPacket = false;
+		while (bufferClone.readableBytes() != 0) {
+			if (secondPacket) {
+				if (this.compressionThreshold == -1) {
+					wrapper.readVarInt();
 				}
+			}
+			int id = wrapper.readVarInt();
+			Class<? extends Packet> clazz = PacketRegistry.getClientBoundPacket(id, this.currentState);
+			if (clazz == null) {
+				ProxyLogger.warn("Unknown serverBound packet with ID 0x" + Integer.toHexString(id) + " and state " + this.currentState);
 				return originalBuffer;
 			}
+			Packet packet = clazz.newInstance();
+			ProxyLogger.debug("Handled " + packet);
 			packet.read(wrapper);
 			packet.onReceive(this, new PacketReceiveEvent());
+			if (packet instanceof PacketOutCompression) {
+				return originalBuffer;
+			}
+			secondPacket = true;
 		}
-		// ProxyLogger.debug("server --> client");
+		return originalBuffer;
 	}
 }

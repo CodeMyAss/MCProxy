@@ -15,31 +15,32 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy.protocol.packet.ping;
+package me.bigteddy98.mcproxy.protocol.packet.login;
 
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
 import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
 
-public class PacketInPing extends Packet {
+public class PacketInLoginStart extends Packet {
 
-	private long time;
+	private String name;
 
-	public PacketInPing() {}
+	public PacketInLoginStart() {
+	}
 
-	public PacketInPing(long time) {
-		this.time = time;
+	public PacketInLoginStart(String name) {
+		this.name = name;
 	}
 
 	@Override
 	public void read(PacketDataWrapper wrapper) {
-		this.time = wrapper.readLong();
+		this.name = wrapper.readString();
 	}
 
 	@Override
 	public void write(PacketDataWrapper wrapper) {
-		wrapper.writeLong(time);
+		wrapper.writeString(this.name);
 	}
 
 	@Override
@@ -47,11 +48,11 @@ public class PacketInPing extends Packet {
 		// TODO
 	}
 
-	public long getTime() {
-		return time;
+	public String getName() {
+		return name;
 	}
 
-	public void setTime(long time) {
-		this.time = time;
+	public void setName(String name) {
+		this.name = name;
 	}
 }

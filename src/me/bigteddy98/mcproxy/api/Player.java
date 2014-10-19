@@ -52,5 +52,15 @@ public interface Player {
 	public void displayTitle(String message);
 
 	public void displaySubTitle(String message);
+	
+	public void giveExpLevels(int amount);
+	
+	public void giveExp(int amount);
+	
+	public void removeExp(int amount);
+	
+	public void removeExpLevels(int amount);
+	
+	public void removeAllExp();
 }
 

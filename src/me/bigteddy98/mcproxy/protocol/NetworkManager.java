@@ -31,6 +31,7 @@ import me.bigteddy98.mcproxy.api.GameMode;
 import me.bigteddy98.mcproxy.api.InventoryType;
 import me.bigteddy98.mcproxy.api.Player;
 import me.bigteddy98.mcproxy.api.PotionEffect;
+import me.bigteddy98.mcproxy.api.Weather;
 import me.bigteddy98.mcproxy.api.entity.Achievement;
 import me.bigteddy98.mcproxy.entity.Location;
 import me.bigteddy98.mcproxy.inventory.ItemStack;
@@ -305,5 +306,30 @@ public class NetworkManager implements Player {
 	@Override
 	public void displaySubTitle(String message) {
 		Main.getInstance().executeCommand("title " + this.getName() + " subtitle {text:\"" + message + "\"}");
+	}
+
+	@Override
+	public void giveExpLevels(int amount) {
+		Main.getInstance().executeCommand("xp " + amount + "L " + this.getName());
+	}
+
+	@Override
+	public void giveExp(int amount) {
+		Main.getInstance().executeCommand("xp " + amount + " " + this.getName());
+	}
+
+	@Override
+	public void removeExp(int amount) {
+		Main.getInstance().executeCommand("xp -" + amount + " " + this.getName());
+	}
+
+	@Override
+	public void removeAllExp() {
+		Main.getInstance().executeCommand("xp -2147483648L " + this.getName());
+	}
+
+	@Override
+	public void removeExpLevels(int amount) {
+		Main.getInstance().executeCommand("xp -" + amount + "L " + this.getName());
 	}
 }

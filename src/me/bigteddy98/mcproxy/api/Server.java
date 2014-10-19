@@ -109,4 +109,32 @@ public class Server {
 	public void enableAutoSave(){
 		Main.getInstance().executeCommand("save-on");
 	}
+	
+	public void setWeather(Weather weather, int duration){
+		Main.getInstance().executeCommand("weather " + weather.getName() + " " + duration);
+	}
+	
+	public void addWhitelist(String name){
+		Main.getInstance().executeCommand("whitelist add " + name);
+	}
+	
+	public void removeWhitelist(String name){
+		Main.getInstance().executeCommand("whitelist remove " + name);
+	}
+	
+	public void enableWhitelist(boolean enable){
+		if(enable){
+			Main.getInstance().executeCommand("whitelist on");
+		} else {
+			Main.getInstance().executeCommand("whitelist off");
+		}
+	}
+	
+	public void enableWhitelist(){
+		Main.getInstance().executeCommand("whitelist on");
+	}
+	
+	public void disableWhitelist(){
+		Main.getInstance().executeCommand("whitelist off");
+	}
 }

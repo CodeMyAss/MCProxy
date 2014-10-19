@@ -25,11 +25,13 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.concurrent.ThreadFactory;
 
+import me.bigteddy98.mcproxy.protocol.BufferUtils;
 import me.bigteddy98.mcproxy.protocol.ClientboundConnectionInitializer;
 
 public class Main {
@@ -57,9 +59,10 @@ public class Main {
 		this.toPort = 25565;
 		this.processBuilder = processBuilder;
 	}
-	
-	public void executeCommand(String command){
+
+	public void executeCommand(String command) {
 		this.processPrintWriter.println(command);
+		this.processPrintWriter.flush();
 	}
 
 	public void run() throws Exception {
@@ -70,24 +73,60 @@ public class Main {
 		this.serverProcess = builder.start();
 		this.processPrintWriter = new PrintWriter(this.serverProcess.getOutputStream());
 		ProxyLogger.info("Server process started.");
+		
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				serverProcess.destroy();
+			}
+		}));
+		
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				try (InputStream r = serverProcess.getInputStream()) {
+					StringBuilder tmp = new StringBuilder();
 					byte[] consoleOutput = new byte[1024];
 					int read;
 					while ((read = r.read(consoleOutput)) != -1) {
 						String consoleLog = new String(consoleOutput, 0, read);
-						ProxyLogger.info("Recieved: " + consoleLog);
+						String[] c = consoleLog.split("\n", -1);
+						if (c.length != 0) {
+							if (c.length == 1) {
+								tmp.append(c[0]);
+							} else {
+								for (int i = 0; i < c.length - 1; i++) {
+									tmp.append(c[i]);
+									ProxyLogger.info(tmp.toString());
+									tmp.setLength(0);
+								}
+								tmp.append(c[c.length - 1]);
+							}
+						}
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				ProxyLogger.warn("Something went wrong, the server thread ended!");
+				ProxyLogger.warn("Server thread ended!");
 				System.exit(0);
 			}
-		}, "Vanilla Server Starter").start();
+		}, "Server Output Reader").start();
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try (Scanner in = new Scanner(System.in)) {
+					while (in.hasNextLine()) {
+						String newLine = in.nextLine();
+						executeCommand(newLine);
+					}
+				}
+				ProxyLogger.warn("COMMAND LOOP ENDED, this shouldn't happen!");
+			}
+		}, "CommandReader").start();
 
 		final ThreadGroup nettyListeners = new ThreadGroup(Thread.currentThread().getThreadGroup(), "Netty Listeners");
 		new Thread(nettyListeners, new Runnable() {

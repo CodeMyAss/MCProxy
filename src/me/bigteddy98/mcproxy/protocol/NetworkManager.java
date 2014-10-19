@@ -247,4 +247,9 @@ public class NetworkManager implements Player {
 	public void teleport(Location loc) {
 		Main.getInstance().executeCommand("tp " + this.getName() + " " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
 	}
+
+	@Override
+	public void clearInventory() {
+		Main.getInstance().executeCommand("clear " + this.getName());
+	}
 }

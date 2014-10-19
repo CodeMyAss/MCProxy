@@ -17,18 +17,16 @@
  */
 package me.bigteddy98.mcproxy.api;
 
-import me.bigteddy98.mcproxy.api.entity.Achievement;
-import me.bigteddy98.mcproxy.entity.Location;
+public enum Difficulty {
+	PEACEFUL(0), EASY(1), NORMAL(2), HARD(3), ;
 
-public interface Player {
-	
-	public String getName();
-	
-	public void awardAchievement(Achievement achievement);
-	
-	public void sendMessage(String message);
-	
-	public void teleport(Location location);
-	
-	public void clearInventory();
+	private final int id;
+
+	private Difficulty(int id) {
+		this.id = id;
+	}
+
+	public int getId() {
+		return id;
+	}
 }

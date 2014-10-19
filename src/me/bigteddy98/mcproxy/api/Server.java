@@ -26,4 +26,42 @@ public class Server {
 	public Collection<? extends Player> getOnlinePlayers() {
 		return Main.getInstance().getDataManager().getClonedPlayerList();
 	}
+	
+	public void banPlayer(Player player, String reason){
+		this.banPlayer(player.getName(), reason);
+	}
+	
+	public void banPlayer(String name, String reason){
+		Main.getInstance().executeCommand("ban " + name + " " + reason);
+	}
+	
+	public void banIP(String ip, String reason){
+		Main.getInstance().executeCommand("ban-ip " + ip + " " + reason);
+	}
+	
+	@Deprecated
+	public void setDefaultGameMode(int gameModeId){
+		Main.getInstance().executeCommand("defaultgamemode " + gameModeId);
+	}
+	
+	public void setDefaultGameMode(GameMode gameMode){
+		Main.getInstance().executeCommand("defaultgamemode " + gameMode.getId());
+	}
+	
+	public void removeOperator(Player player){
+		this.removeOperator(player.getName());
+	}
+	
+	public void removeOperator(String name){
+		Main.getInstance().executeCommand("deop " + name);
+	}
+	
+	public void setDifficulty(Difficulty difficulty){
+		this.setDifficulty(difficulty.getId());
+	}
+	
+	@Deprecated
+	public void setDifficulty(int id){
+		Main.getInstance().executeCommand("difficulty " + id);
+	}
 }

@@ -17,18 +17,16 @@
  */
 package me.bigteddy98.mcproxy.api;
 
-import me.bigteddy98.mcproxy.api.entity.Achievement;
-import me.bigteddy98.mcproxy.entity.Location;
+public enum GameMode {
+	SURVIVAL(0), CREATIVE(1), ADVENTURE(2);
 
-public interface Player {
-	
-	public String getName();
-	
-	public void awardAchievement(Achievement achievement);
-	
-	public void sendMessage(String message);
-	
-	public void teleport(Location location);
-	
-	public void clearInventory();
+	private final int id;
+
+	private GameMode(int id) {
+		this.id = id;
+	}
+
+	public int getId() {
+		return id;
+	}
 }

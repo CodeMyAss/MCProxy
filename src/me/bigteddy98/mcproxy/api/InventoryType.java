@@ -17,16 +17,19 @@
  */
 package me.bigteddy98.mcproxy.api;
 
-public enum GameMode {
-	SURVIVAL(0), CREATIVE(1), ADVENTURE(2), SPECTATOR(3);
+public enum InventoryType {
+	
+	HOTBAR("slot.hotbar.%SLOTNUMBER%"),
+	INVENTORY("slot.inventory.%SLOTNUMBER%"),
+	;
 
-	private final int id;
+	private final String name;
 
-	private GameMode(int id) {
-		this.id = id;
+	private InventoryType(String name) {
+		this.name = name;
 	}
 
-	public int getId() {
-		return id;
+	public String getName() {
+		return name;
 	}
 }

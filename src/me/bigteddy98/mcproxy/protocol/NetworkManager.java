@@ -27,9 +27,13 @@ import java.util.zip.Inflater;
 
 import me.bigteddy98.mcproxy.Main;
 import me.bigteddy98.mcproxy.ProxyLogger;
+import me.bigteddy98.mcproxy.api.GameMode;
+import me.bigteddy98.mcproxy.api.InventoryType;
 import me.bigteddy98.mcproxy.api.Player;
+import me.bigteddy98.mcproxy.api.PotionEffect;
 import me.bigteddy98.mcproxy.api.entity.Achievement;
 import me.bigteddy98.mcproxy.entity.Location;
+import me.bigteddy98.mcproxy.inventory.ItemStack;
 import me.bigteddy98.mcproxy.protocol.codex.CompressionCodex;
 import me.bigteddy98.mcproxy.protocol.codex.DecompressionCodex;
 import me.bigteddy98.mcproxy.protocol.handlers.ClientSideHandler;
@@ -240,7 +244,7 @@ public class NetworkManager implements Player {
 
 	@Override
 	public void sendMessage(String message) {
-		// TODO
+		Main.getInstance().executeCommand("tellraw " + this.getName() + " {text:\"" + message + "\"}");
 	}
 
 	@Override
@@ -251,5 +255,55 @@ public class NetworkManager implements Player {
 	@Override
 	public void clearInventory() {
 		Main.getInstance().executeCommand("clear " + this.getName());
+	}
+
+	@Override
+	public void addPotionEffect(PotionEffect effect, int seconds, int amplifier, boolean hideParticles) {
+		Main.getInstance().executeCommand("effect " + this.getName() + " " + effect.getId() + " " + seconds + " " + amplifier + " " + hideParticles);
+	}
+
+	@Override
+	public void removePotionEffects() {
+		Main.getInstance().executeCommand("effect " + this.getName() + " clear");
+	}
+
+	@Override
+	public void setGameMode(GameMode gameMode) {
+		Main.getInstance().executeCommand("gamemode " + gameMode.getId() + " " + this.getName());
+	}
+
+	@Override
+	public void giveItem(ItemStack stack) {
+		Main.getInstance().executeCommand("give " + this.getName() + " " + stack.getBlockId() + " " + stack.getAmount() + " " + stack.getDamage());
+	}
+
+	@Override
+	public void kick(String reason) {
+		Main.getInstance().executeCommand("kick " + this.getName() + " " + reason);
+	}
+
+	@Override
+	public void playSound(String soundname) {
+		Main.getInstance().executeCommand("playsound " + soundname + " " + this.getName());
+	}
+
+	@Override
+	public void playSound(String soundname, float x, float y, float z) {
+		Main.getInstance().executeCommand("playsound " + soundname + " " + this.getName() + " " + x + " " + y + " " + z);
+	}
+
+	@Override
+	public void setInventoryItem(InventoryType type, int slotNumber, ItemStack stack) {
+		Main.getInstance().executeCommand("replaceitem entity " + this.getName() + " " + type.getName().replace("%SLOTNUMBER%", slotNumber + "") + " " + stack.getBlockId() + " " + stack.getAmount() + " " + stack.getDamage());
+	}
+
+	@Override
+	public void displayTitle(String message) {
+		Main.getInstance().executeCommand("title " + this.getName() + " title {text:\"" + message + "\"}");
+	}
+
+	@Override
+	public void displaySubTitle(String message) {
+		Main.getInstance().executeCommand("title " + this.getName() + " subtitle {text:\"" + message + "\"}");
 	}
 }

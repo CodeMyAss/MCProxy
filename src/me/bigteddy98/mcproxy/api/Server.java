@@ -48,6 +48,14 @@ public class Server {
 		Main.getInstance().executeCommand("defaultgamemode " + gameMode.getId());
 	}
 	
+	public void addOperator(Player player){
+		this.addOperator(player.getName());
+	}
+	
+	public void addOperator(String name){
+		Main.getInstance().executeCommand("op " + name);
+	}
+	
 	public void removeOperator(Player player){
 		this.removeOperator(player.getName());
 	}
@@ -63,5 +71,42 @@ public class Server {
 	@Deprecated
 	public void setDifficulty(int id){
 		Main.getInstance().executeCommand("difficulty " + id);
+	}
+	
+	public void setGameRule(String gameRule, String value){
+		Main.getInstance().executeCommand("gamerule " + gameRule + " " + value);
+	}
+	
+	public void kickPlayer(Player player, String reason){
+		Main.getInstance().executeCommand("kick " + player.getName() + " " + reason);
+	}
+	
+	public void kill(Player player){
+		Main.getInstance().executeCommand("kill " + player.getName());
+	}
+	
+	public void unban(String name){
+		Main.getInstance().executeCommand("pardon " + name);
+	}
+	
+	public void unbanIP(String ip){
+		Main.getInstance().executeCommand("pardon-ip " + ip);
+	}
+	
+	public void displayParticle(Particle particle, float x, float y, float z, float xOffset, float yOffset, float zOffset, int speed, int count){
+		//TODO flush this straight into the players network stream
+		Main.getInstance().executeCommand("particle " + particle.getName() + " " + x + " " + y + " " + z + " " + xOffset + " " + yOffset + " " + zOffset + " " + speed + " " + count);
+	}
+	
+	public void saveAll(){
+		Main.getInstance().executeCommand("save-all");
+	}
+	
+	public void disableAutoSave(){
+		Main.getInstance().executeCommand("save-off");
+	}
+	
+	public void enableAutoSave(){
+		Main.getInstance().executeCommand("save-on");
 	}
 }

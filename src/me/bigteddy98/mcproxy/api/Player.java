@@ -19,6 +19,7 @@ package me.bigteddy98.mcproxy.api;
 
 import me.bigteddy98.mcproxy.api.entity.Achievement;
 import me.bigteddy98.mcproxy.entity.Location;
+import me.bigteddy98.mcproxy.inventory.ItemStack;
 
 public interface Player {
 	
@@ -31,4 +32,25 @@ public interface Player {
 	public void teleport(Location location);
 	
 	public void clearInventory();
+	
+	public void addPotionEffect(PotionEffect effect, int seconds, int amplifier, boolean hideParticles);
+	
+	public void removePotionEffects();
+	
+	public void setGameMode(GameMode gameMode);
+	
+	public void giveItem(ItemStack stack);
+	
+	public void kick(String reason);
+	
+	public void playSound(String soundname);
+	
+	public void playSound(String soundname, float x, float y, float z);
+	
+	public void setInventoryItem(InventoryType type, int slotNumber, ItemStack stack);
+	
+	public void displayTitle(String message);
+
+	public void displaySubTitle(String message);
 }
+

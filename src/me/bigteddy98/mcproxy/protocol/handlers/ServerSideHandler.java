@@ -43,15 +43,14 @@ public class ServerSideHandler extends ChannelHandlerAdapter {
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		networkManager.serversideHandler = ctx.pipeline();
+		networkManager.serversidePipeline = ctx.pipeline();
 		ctx.read();
 		ctx.write(Unpooled.EMPTY_BUFFER);
 	}
 	
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-		ctx.close();
-		networkManager.clientsideHandler.close();
+		this.networkManager.disconnect();
 		super.channelInactive(ctx);
 	}
 

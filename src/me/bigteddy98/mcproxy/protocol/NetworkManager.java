@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import me.bigteddy98.mcproxy.Main;
 import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.codex.CompressionCodex;
 import me.bigteddy98.mcproxy.protocol.codex.DecompressionCodex;
@@ -35,8 +36,7 @@ import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
 
 public class NetworkManager {
 
-	public final ClientSideHandler clientToProxyHandler;
-
+	public final ClientSideHandler clientSideHandler;
 	public volatile ConnectionState currentState = ConnectionState.HANDSHAKE;
 	public volatile int protocolId;
 
@@ -46,11 +46,11 @@ public class NetworkManager {
 	public boolean clientsideCompressionEnabled = false;
 	public boolean serversideCompressionEnabled = false;
 
-	public ChannelPipeline serversideHandler;
-	public ChannelPipeline clientsideHandler;
+	public ChannelPipeline serversidePipeline;
+	public ChannelPipeline clientsidePipeline;
 
 	public NetworkManager(ClientSideHandler clientToProxyHandler) {
-		this.clientToProxyHandler = clientToProxyHandler;
+		this.clientSideHandler = clientToProxyHandler;
 	}
 
 	public synchronized List<Packet> handleServerBoundPackets(ByteBuf originalBuffer, ByteBuf bufferClone) throws InstantiationException, IllegalAccessException {
@@ -88,7 +88,6 @@ public class NetworkManager {
 			int id = wrapper.readVarInt();
 			Class<? extends Packet> clazz = PacketRegistry.getServerBoundPacket(id, this.currentState);
 			if (clazz == null) {
-				ProxyLogger.warn("Unknown packet ID 0x" + Integer.toHexString(id) + " and state " + this.currentState);
 				return list;
 			}
 			Packet packet = clazz.newInstance();
@@ -136,7 +135,6 @@ public class NetworkManager {
 			int id = wrapper.readVarInt();
 			Class<? extends Packet> clazz = PacketRegistry.getClientBoundPacket(id, this.currentState);
 			if (clazz == null) {
-				ProxyLogger.warn("Unknown packet ID 0x" + Integer.toHexString(id) + " and state " + this.currentState);
 				return list;
 			}
 			Packet packet = clazz.newInstance();
@@ -149,23 +147,80 @@ public class NetworkManager {
 		return list;
 	}
 
+	public void disconnect() {
+		this.clientsidePipeline.close();
+		this.serversidePipeline.close();
+		Main.getInstance().getDataManager().disconnectPlayer(this);
+	}
+
 	public void enableServerSideCompression() {
-		if(this.serversideCompressionEnabled){
+		if (this.serversideCompressionEnabled) {
 			return;
 		}
 		this.serversideCompressionEnabled = true;
 		ProxyLogger.info("Serversided compression threshold is now set to " + this.compressionThreshold);
-		this.serversideHandler.addBefore("serverbound_proxy_codex", "decompression_codex", new DecompressionCodex(this));
-		this.serversideHandler.addBefore("serverbound_proxy_codex", "compression_codex", new CompressionCodex(this));
+		this.serversidePipeline.addBefore("serverbound_proxy_codex", "decompression_codex", new DecompressionCodex(this));
+		this.serversidePipeline.addBefore("serverbound_proxy_codex", "compression_codex", new CompressionCodex(this));
 	}
-	
-	public void enableClientSideCompression(){
-		if(this.clientsideCompressionEnabled){
+
+	public void enableClientSideCompression() {
+		if (this.clientsideCompressionEnabled) {
 			return;
 		}
 		this.clientsideCompressionEnabled = true;
 		ProxyLogger.info("Clientsided compression threshold is now set to " + this.compressionThreshold);
-		this.clientsideHandler.addBefore("clientbound_proxy_codex", "decompression_codex", new DecompressionCodex(this));
-		this.clientsideHandler.addBefore("clientbound_proxy_codex", "compression_codex", new CompressionCodex(this));
+		this.clientsidePipeline.addBefore("clientbound_proxy_codex", "decompression_codex", new DecompressionCodex(this));
+		this.clientsidePipeline.addBefore("clientbound_proxy_codex", "compression_codex", new CompressionCodex(this));
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((clientSideHandler == null) ? 0 : clientSideHandler.hashCode());
+		result = prime * result + (clientsideCompressionEnabled ? 1231 : 1237);
+		result = prime * result + ((clientsidePipeline == null) ? 0 : clientsidePipeline.hashCode());
+		result = prime * result + compressionThreshold;
+		result = prime * result + ((currentState == null) ? 0 : currentState.hashCode());
+		result = prime * result + (serversideCompressionEnabled ? 1231 : 1237);
+		result = prime * result + ((serversidePipeline == null) ? 0 : serversidePipeline.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		NetworkManager other = (NetworkManager) obj;
+		if (clientSideHandler == null) {
+			if (other.clientSideHandler != null)
+				return false;
+		} else if (!clientSideHandler.equals(other.clientSideHandler))
+			return false;
+		if (clientsideCompressionEnabled != other.clientsideCompressionEnabled)
+			return false;
+		if (clientsidePipeline == null) {
+			if (other.clientsidePipeline != null)
+				return false;
+		} else if (!clientsidePipeline.equals(other.clientsidePipeline))
+			return false;
+		if (compressionThreshold != other.compressionThreshold)
+			return false;
+		if (currentState != other.currentState)
+			return false;
+		if (serversideCompressionEnabled != other.serversideCompressionEnabled)
+			return false;
+		if (serversidePipeline == null) {
+			if (other.serversidePipeline != null)
+				return false;
+		} else if (!serversidePipeline.equals(other.serversidePipeline))
+			return false;
+		return true;
+	}
+	
+	
 }

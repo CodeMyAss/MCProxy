@@ -17,6 +17,7 @@
  */
 package me.bigteddy98.mcproxy.protocol.packet.login;
 
+import me.bigteddy98.mcproxy.Main;
 import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.ConnectionState;
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
@@ -41,7 +42,6 @@ public class PacketOutLoginSucces extends Packet {
 	public void read(PacketDataWrapper wrapper) {
 		this.uuid = wrapper.readString();
 		this.username = wrapper.readString();
-		ProxyLogger.debug("Player " + this.username + " UUID " + this.uuid.toString());
 	}
 
 	@Override
@@ -53,6 +53,7 @@ public class PacketOutLoginSucces extends Packet {
 	@Override
 	public void onReceive(NetworkManager networkManager, PacketReceiveEvent event) {
 		networkManager.currentState = ConnectionState.PLAY;
+		Main.getInstance().getDataManager().joinPlayer(networkManager);
 	}
 
 	public String getUUID() {

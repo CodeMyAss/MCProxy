@@ -26,12 +26,10 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.ProcessBuilder.Redirect;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.ThreadFactory;
 
-import me.bigteddy98.mcproxy.protocol.BufferUtils;
 import me.bigteddy98.mcproxy.protocol.ClientboundConnectionInitializer;
 
 public class Main {
@@ -53,11 +51,22 @@ public class Main {
 	private final String[] processBuilder;
 	private final int fromPort;
 	private final int toPort;
+	private final DataManager dataManager = new DataManager();
+	private static Main instance;
 
 	public Main(String[] processBuilder) {
+		instance = this;
 		this.fromPort = 25566;
 		this.toPort = 25565;
 		this.processBuilder = processBuilder;
+	}
+
+	public static Main getInstance() {
+		return instance;
+	}
+
+	public DataManager getDataManager() {
+		return this.dataManager;
 	}
 
 	public void executeCommand(String command) {
@@ -73,15 +82,15 @@ public class Main {
 		this.serverProcess = builder.start();
 		this.processPrintWriter = new PrintWriter(this.serverProcess.getOutputStream());
 		ProxyLogger.info("Server process started.");
-		
+
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				serverProcess.destroy();
 			}
 		}));
-		
+
 		new Thread(new Runnable() {
 
 			@Override

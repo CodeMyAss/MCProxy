@@ -50,14 +50,14 @@ public class ClientSideHandler extends ChannelHandlerAdapter {
 	
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-		ctx.close();
-		networkManager.serversideHandler.close();
+		this.networkManager.disconnect();
+		super.channelInactive(ctx);
 	}
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		incomingChannel = ctx.channel();
-		networkManager.clientsideHandler = ctx.pipeline();
+		networkManager.clientsidePipeline = ctx.pipeline();
 
 		Bootstrap bootstrab = new Bootstrap();
 		bootstrab.group(incomingChannel.eventLoop());

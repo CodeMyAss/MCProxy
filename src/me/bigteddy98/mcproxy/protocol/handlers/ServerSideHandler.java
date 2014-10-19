@@ -15,7 +15,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy.protocol;
+package me.bigteddy98.mcproxy.protocol.handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -28,14 +28,15 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.List;
 
 import me.bigteddy98.mcproxy.ProxyLogger;
+import me.bigteddy98.mcproxy.protocol.NetworkManager;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 
-public class ServerSidedHandler extends ChannelHandlerAdapter {
+public class ServerSideHandler extends ChannelHandlerAdapter {
 
 	private final Channel inboundChannel;
 	private final NetworkManager networkManager;
 
-	public ServerSidedHandler(NetworkManager networkManager, Channel inboundChannel) {
+	public ServerSideHandler(NetworkManager networkManager, Channel inboundChannel) {
 		this.networkManager = networkManager;
 		this.inboundChannel = inboundChannel;
 	}
@@ -45,6 +46,13 @@ public class ServerSidedHandler extends ChannelHandlerAdapter {
 		networkManager.serversideHandler = ctx.pipeline();
 		ctx.read();
 		ctx.write(Unpooled.EMPTY_BUFFER);
+	}
+	
+	@Override
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		ctx.close();
+		networkManager.clientsideHandler.close();
+		super.channelInactive(ctx);
 	}
 
 	@Override

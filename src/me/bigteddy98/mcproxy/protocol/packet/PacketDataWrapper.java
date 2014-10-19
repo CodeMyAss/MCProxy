@@ -285,8 +285,9 @@ public class PacketDataWrapper {
 				int i = (5 << 5 | watch.getKey() & 0x1F) & 0xFF;
 				this.writeByte(i);
 				this.writeItemStack((ItemStack) watch.getValue());
-			//} else if (watch.getValue() instanceof Vector) { currently not implemented
-				
+				// } else if (watch.getValue() instanceof Vector) { currently
+				// not implemented
+
 			} else {
 				throw new UnsupportedEncodingException("Type " + watch.getValue().getClass() + " cannot be part of a datawatcher.");
 			}
@@ -322,8 +323,8 @@ public class PacketDataWrapper {
 		this.writeLong(uuid.getMostSignificantBits());
 		this.writeLong(uuid.getLeastSignificantBits());
 	}
-	
-	public UUID readUUID(){
+
+	public UUID readUUID() {
 		return new UUID(this.readLong(), this.readLong());
 	}
 
@@ -333,5 +334,9 @@ public class PacketDataWrapper {
 
 	public int readUnsignedShort() {
 		return this.buffer.readUnsignedShort();
+	}
+
+	public int readInt() {
+		return this.buffer.readInt();
 	}
 }

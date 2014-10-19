@@ -17,6 +17,7 @@
  */
 package me.bigteddy98.mcproxy.protocol;
 
+import me.bigteddy98.mcproxy.protocol.handlers.ClientSideHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 
@@ -32,6 +33,6 @@ public class ClientboundConnectionInitializer extends ChannelInitializer<SocketC
 
 	@Override
 	public void initChannel(SocketChannel ch) throws Exception {
-		ch.pipeline().addLast("clientbound_proxy_codex", new ClientToProxyHandler(hostname, port));
+		ch.pipeline().addLast("clientbound_proxy_codex", new ClientSideHandler(hostname, port));
 	}
 }

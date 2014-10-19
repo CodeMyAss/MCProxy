@@ -17,14 +17,20 @@
  */
 package me.bigteddy98.mcproxy;
 
-import java.util.concurrent.ThreadFactory;
-
-import me.bigteddy98.mcproxy.protocol.ClientboundConnectionInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.concurrent.ThreadFactory;
+
+import me.bigteddy98.mcproxy.protocol.ClientboundConnectionInitializer;
 
 public class Main {
 
@@ -40,16 +46,48 @@ public class Main {
 	public static final int DEFAULT_PROTOCOL = 47;
 	public static final String AUTHOR = "Sander Gielisse || BigTeddy98";
 
+	public Process serverProcess;
+	public PrintWriter processPrintWriter;
+	private final String[] processBuilder;
 	private final int fromPort;
 	private final int toPort;
 
-	public Main() {
+	public Main(String[] processBuilder) {
 		this.fromPort = 25566;
 		this.toPort = 25565;
+		this.processBuilder = processBuilder;
+	}
+	
+	public void executeCommand(String command){
+		this.processPrintWriter.println(command);
 	}
 
 	public void run() throws Exception {
 		ProxyLogger.info("Starting " + NAME + " version " + VERSION + " developed by " + AUTHOR + "!");
+		ProxyLogger.info("Starting server process using commandline " + Arrays.asList(processBuilder).toString() + "...");
+		ProcessBuilder builder = new ProcessBuilder(processBuilder);
+		builder.redirectErrorStream(true);
+		this.serverProcess = builder.start();
+		this.processPrintWriter = new PrintWriter(this.serverProcess.getOutputStream());
+		ProxyLogger.info("Server process started.");
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try (InputStream r = serverProcess.getInputStream()) {
+					byte[] consoleOutput = new byte[1024];
+					int read;
+					while ((read = r.read(consoleOutput)) != -1) {
+						String consoleLog = new String(consoleOutput, 0, read);
+						ProxyLogger.info("Recieved: " + consoleLog);
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				ProxyLogger.warn("Something went wrong, the server thread ended!");
+				System.exit(0);
+			}
+		}, "Vanilla Server Starter").start();
 
 		final ThreadGroup nettyListeners = new ThreadGroup(Thread.currentThread().getThreadGroup(), "Netty Listeners");
 		new Thread(nettyListeners, new Runnable() {
@@ -102,6 +140,30 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws Exception {
-		new Main().run();
+		// startup args:
+		// -serverjar minecraft_server_1.8.jar
+		if (args.length < 2) {
+			ProxyLogger.warn("Required startup arguments missing! Please use the following startup arguments:");
+			// TODO print a list of arguments
+			return;
+		}
+		String[] processBuilder = null;
+		int currentArg = 0;
+		for (String arg : args) {
+			if (arg.equalsIgnoreCase("-serverjar")) {
+				String[] a = new String[args.length - currentArg - 1];
+				for (int i = currentArg + 1; i < args.length; i++) {
+					a[i - currentArg - 1] = args[i];
+				}
+				ProxyLogger.info("Loaded processbuilder path: '" + Arrays.asList(a).toString() + "'");
+				processBuilder = a;
+			}
+			currentArg++;
+		}
+		if (processBuilder == null) {
+			ProxyLogger.warn("Required startup arguments missing! Please use the following startup arguments:");
+			// TODO print a list of arguments
+		}
+		new Main(processBuilder).run();
 	}
 }

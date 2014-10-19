@@ -17,23 +17,29 @@
  */
 package me.bigteddy98.mcproxy.protocol;
 
-import me.bigteddy98.mcproxy.protocol.handlers.ServerSideHandler;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.socket.SocketChannel;
+import io.netty.buffer.ByteBuf;
+import me.bigteddy98.mcproxy.ProxyLogger;
 
-public class ServerboundConnectionInitializer extends ChannelInitializer<SocketChannel> {
+public class BufferUtils {
 
-	private final NetworkManager networkManager;
-	private final Channel inboundChannel;
-
-	public ServerboundConnectionInitializer(NetworkManager networkManager, Channel inboundChannel) {
-		this.networkManager = networkManager;
-		this.inboundChannel = inboundChannel;
+	public static void printBufferHex(String name, ByteBuf buf) {
+		buf.markReaderIndex();
+		byte[] array = new byte[buf.readableBytes()];
+		buf.readBytes(array, 0, buf.readableBytes());
+		ProxyLogger.debug("Buffer hex data for name " + name + " " + getHexString(array));
+		buf.resetReaderIndex();
 	}
 
-	@Override
-	protected void initChannel(SocketChannel ch) throws Exception {
-		ch.pipeline().addLast("serverbound_proxy_codex", new ServerSideHandler(networkManager, inboundChannel));
+	private static final char[] hex = "0123456789ABCDEF".toCharArray();
+	public static String getHexString(byte[] hexArray) {
+		char[] hexChars = new char[hexArray.length * 3];
+		int v;
+		for (int j = 0; j < hexArray.length; j++) {
+			v = hexArray[j] & 0xFF;
+			hexChars[j * 3] = hex[v >>> 4];
+			hexChars[j * 3 + 1] = hex[v & 0x0F];
+			hexChars[j * 3 + 2] = ' ';
+		}
+		return new String(hexChars);
 	}
 }

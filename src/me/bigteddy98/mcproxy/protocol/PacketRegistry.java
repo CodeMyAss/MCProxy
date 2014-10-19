@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketInHandShake;
 import me.bigteddy98.mcproxy.protocol.packet.login.PacketInLoginStart;
@@ -31,6 +30,7 @@ import me.bigteddy98.mcproxy.protocol.packet.ping.PacketInPing;
 import me.bigteddy98.mcproxy.protocol.packet.ping.PacketInRequest;
 import me.bigteddy98.mcproxy.protocol.packet.ping.PacketOutPing;
 import me.bigteddy98.mcproxy.protocol.packet.ping.PacketOutResponse;
+import me.bigteddy98.mcproxy.protocol.packet.play.PacketOutJoinGame;
 
 public class PacketRegistry {
 
@@ -65,14 +65,22 @@ public class PacketRegistry {
 		map.put(0x03, PacketOutCompression.class);
 		LOGIN_OUT = Collections.unmodifiableMap(map);
 	}
+	
+	private static Map<Integer, Class<? extends Packet>> PLAY_OUT;
+	static {
+		Map<Integer, Class<? extends Packet>> map = new HashMap<>();
+		map.put(0x01, PacketOutJoinGame.class);
+		PLAY_OUT = Collections.unmodifiableMap(map);
+	}
 
 	public static Class<? extends Packet> getClientBoundPacket(int id, ConnectionState state) {
 		if (state == ConnectionState.STATUS) {
 			return STATUS_OUT.get(id);
 		} else if (state == ConnectionState.LOGIN) {
 			return LOGIN_OUT.get(id);
+		} else if(state == ConnectionState.PLAY){
+			return PLAY_OUT.get(id);
 		}
-		ProxyLogger.warn("Unknown clientBound packet ID 0x" + Integer.toHexString(id) + " with connectionState " + state);
 		return null;
 	}
 
@@ -86,7 +94,6 @@ public class PacketRegistry {
 		} else if (state == ConnectionState.LOGIN) {
 			return LOGIN_IN.get(id);
 		}
-		ProxyLogger.warn("Unknown serverBound packet ID 0x" + Integer.toHexString(id) + " with connectionState " + state);
 		return null;
 	}
 }

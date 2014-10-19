@@ -24,7 +24,7 @@ import io.netty.handler.codec.ReplayingDecoder;
 
 import java.util.List;
 
-import me.bigteddy98.mcproxy.ProxyLogger;
+import me.bigteddy98.mcproxy.protocol.BufferUtils;
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
 
@@ -65,27 +65,5 @@ public class DecompressionCodex extends ReplayingDecoder<Void> {
 			networkManager.inflater.reset();
 		}
 		out.add(uncompressedBuffer.getBuffer());
-	}
-
-	private static void print(String name, ByteBuf buf) {
-		buf.markReaderIndex();
-		byte[] array = new byte[buf.readableBytes()];
-		buf.readBytes(array, 0, buf.readableBytes());
-		ProxyLogger.debug("Current bytes " + name + ": " + getHexString(array));
-		buf.resetReaderIndex();
-	}
-
-	final protected static char[] hex = "0123456789ABCDEF".toCharArray();
-
-	public static String getHexString(byte[] hexArray) {
-		char[] hexChars = new char[hexArray.length * 3];
-		int v;
-		for (int j = 0; j < hexArray.length; j++) {
-			v = hexArray[j] & 0xFF;
-			hexChars[j * 3] = hex[v >>> 4];
-			hexChars[j * 3 + 1] = hex[v & 0x0F];
-			hexChars[j * 3 + 2] = ' ';
-		}
-		return new String(hexChars);
 	}
 }

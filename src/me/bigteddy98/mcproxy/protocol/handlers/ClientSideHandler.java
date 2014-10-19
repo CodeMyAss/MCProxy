@@ -15,7 +15,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy.protocol;
+package me.bigteddy98.mcproxy.protocol.handlers;
 
 import java.util.List;
 
@@ -29,9 +29,11 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import me.bigteddy98.mcproxy.ProxyLogger;
+import me.bigteddy98.mcproxy.protocol.NetworkManager;
+import me.bigteddy98.mcproxy.protocol.ServerboundConnectionInitializer;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 
-public class ClientToProxyHandler extends ChannelHandlerAdapter {
+public class ClientSideHandler extends ChannelHandlerAdapter {
 
 	public final String hostname;
 	public final int port;
@@ -41,9 +43,15 @@ public class ClientToProxyHandler extends ChannelHandlerAdapter {
 	public volatile Channel incomingChannel;
 	public volatile Channel outgoingChannel;
 
-	public ClientToProxyHandler(String hostname, int port) {
+	public ClientSideHandler(String hostname, int port) {
 		this.hostname = hostname;
 		this.port = port;
+	}
+	
+	@Override
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		ctx.close();
+		networkManager.serversideHandler.close();
 	}
 
 	@Override

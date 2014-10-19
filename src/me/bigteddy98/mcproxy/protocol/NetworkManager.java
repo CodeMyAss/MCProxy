@@ -28,13 +28,14 @@ import java.util.zip.Inflater;
 import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.codex.CompressionCodex;
 import me.bigteddy98.mcproxy.protocol.codex.DecompressionCodex;
+import me.bigteddy98.mcproxy.protocol.handlers.ClientSideHandler;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
 import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
 
 public class NetworkManager {
 
-	public final ClientToProxyHandler clientToProxyHandler;
+	public final ClientSideHandler clientToProxyHandler;
 
 	public volatile ConnectionState currentState = ConnectionState.HANDSHAKE;
 	public volatile int protocolId;
@@ -48,7 +49,7 @@ public class NetworkManager {
 	public ChannelPipeline serversideHandler;
 	public ChannelPipeline clientsideHandler;
 
-	public NetworkManager(ClientToProxyHandler clientToProxyHandler) {
+	public NetworkManager(ClientSideHandler clientToProxyHandler) {
 		this.clientToProxyHandler = clientToProxyHandler;
 	}
 

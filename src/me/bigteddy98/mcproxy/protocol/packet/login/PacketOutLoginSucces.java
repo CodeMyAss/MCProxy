@@ -17,10 +17,6 @@
  */
 package me.bigteddy98.mcproxy.protocol.packet.login;
 
-import io.netty.buffer.ByteBuf;
-
-import java.util.UUID;
-
 import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.ConnectionState;
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
@@ -39,28 +35,6 @@ public class PacketOutLoginSucces extends Packet {
 	public PacketOutLoginSucces(String uuid, String username) {
 		this.uuid = uuid;
 		this.username = username;
-	}
-
-	private static void print(String name, ByteBuf buf) {
-		buf.markReaderIndex();
-		byte[] array = new byte[buf.readableBytes()];
-		buf.readBytes(array, 0, buf.readableBytes());
-		ProxyLogger.debug("Current bytes: " + getHexString(array));
-		buf.resetReaderIndex();
-	}
-
-	final protected static char[] hex = "0123456789ABCDEF".toCharArray();
-
-	public static String getHexString(byte[] hexArray) {
-		char[] hexChars = new char[hexArray.length * 3];
-		int v;
-		for (int j = 0; j < hexArray.length; j++) {
-			v = hexArray[j] & 0xFF;
-			hexChars[j * 3] = hex[v >>> 4];
-			hexChars[j * 3 + 1] = hex[v & 0x0F];
-			hexChars[j * 3 + 2] = ' ';
-		}
-		return new String(hexChars);
 	}
 
 	@Override

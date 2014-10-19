@@ -18,7 +18,6 @@
 package me.bigteddy98.mcproxy.protocol.packet.login;
 
 import me.bigteddy98.mcproxy.Main;
-import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.ConnectionState;
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
@@ -53,6 +52,8 @@ public class PacketOutLoginSucces extends Packet {
 	@Override
 	public void onReceive(NetworkManager networkManager, PacketReceiveEvent event) {
 		networkManager.currentState = ConnectionState.PLAY;
+		networkManager.playerName = this.username;
+		networkManager.uuid = this.uuid;
 		Main.getInstance().getDataManager().joinPlayer(networkManager);
 	}
 

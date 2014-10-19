@@ -27,6 +27,9 @@ import java.util.zip.Inflater;
 
 import me.bigteddy98.mcproxy.Main;
 import me.bigteddy98.mcproxy.ProxyLogger;
+import me.bigteddy98.mcproxy.api.Player;
+import me.bigteddy98.mcproxy.api.entity.Achievement;
+import me.bigteddy98.mcproxy.entity.Location;
 import me.bigteddy98.mcproxy.protocol.codex.CompressionCodex;
 import me.bigteddy98.mcproxy.protocol.codex.DecompressionCodex;
 import me.bigteddy98.mcproxy.protocol.handlers.ClientSideHandler;
@@ -34,7 +37,7 @@ import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
 import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
 
-public class NetworkManager {
+public class NetworkManager implements Player {
 
 	public final ClientSideHandler clientSideHandler;
 	public volatile ConnectionState currentState = ConnectionState.HANDSHAKE;
@@ -48,6 +51,9 @@ public class NetworkManager {
 
 	public ChannelPipeline serversidePipeline;
 	public ChannelPipeline clientsidePipeline;
+
+	public String playerName;
+	public String uuid;
 
 	public NetworkManager(ClientSideHandler clientToProxyHandler) {
 		this.clientSideHandler = clientToProxyHandler;
@@ -221,6 +227,24 @@ public class NetworkManager {
 			return false;
 		return true;
 	}
-	
-	
+
+	@Override
+	public String getName() {
+		return this.playerName;
+	}
+
+	@Override
+	public void awardAchievement(Achievement achievement) {
+		Main.getInstance().executeCommand("achievement give " + achievement.getName() + " " + this.getName());
+	}
+
+	@Override
+	public void sendMessage(String message) {
+		// TODO
+	}
+
+	@Override
+	public void teleport(Location loc) {
+		Main.getInstance().executeCommand("tp " + this.getName() + " " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
+	}
 }

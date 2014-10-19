@@ -15,34 +15,18 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy;
+package me.bigteddy98.mcproxy.api;
 
-import java.util.ArrayList;
-import java.util.List;
+import me.bigteddy98.mcproxy.api.entity.Achievement;
+import me.bigteddy98.mcproxy.entity.Location;
 
-import me.bigteddy98.mcproxy.protocol.NetworkManager;
-
-public class DataManager {
-
-	private final List<NetworkManager> onlinePlayers = new ArrayList<>();
-
-	public void joinPlayer(NetworkManager networkManager) {
-		synchronized (onlinePlayers) {
-			onlinePlayers.add(networkManager);
-		}
-	}
-
-	public void disconnectPlayer(NetworkManager networkManager) {
-		synchronized (onlinePlayers) {
-			if (onlinePlayers.contains(networkManager)) {
-				onlinePlayers.remove(networkManager);
-			}
-		}
-	}
+public interface Player {
 	
-	public List<NetworkManager> getClonedPlayerList(){
-		synchronized (onlinePlayers) {
-			return new ArrayList<>(this.onlinePlayers);
-		}
-	}
+	public String getName();
+	
+	public void awardAchievement(Achievement achievement);
+	
+	public void sendMessage(String message);
+	
+	public void teleport(Location location);
 }

@@ -15,30 +15,20 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.bigteddy98.mcproxy.protocol.packet.login;
+package me.bigteddy98.mcproxy;
 
 import io.netty.buffer.ByteBuf;
-
-import java.util.UUID;
-
-import me.bigteddy98.mcproxy.ProxyLogger;
-import me.bigteddy98.mcproxy.protocol.ConnectionState;
-import me.bigteddy98.mcproxy.protocol.NetworkManager;
-import me.bigteddy98.mcproxy.protocol.packet.Packet;
+import io.netty.buffer.Unpooled;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
-import me.bigteddy98.mcproxy.protocol.packet.PacketReceiveEvent;
 
-public class PacketOutLoginSucces extends Packet {
+public class MainTest {
 
-	private String uuid;
-	private String username;
-
-	public PacketOutLoginSucces() {
-	}
-
-	public PacketOutLoginSucces(String uuid, String username) {
-		this.uuid = uuid;
-		this.username = username;
+	public static void main(String[] args) {
+		ByteBuf tempBuf = Unpooled.buffer();
+		PacketDataWrapper tempWrapper = new PacketDataWrapper(tempBuf);
+		tempWrapper.writeString("sander2798");
+		print("tempbuf", tempBuf);
+		ProxyLogger.debug("READ: " + tempWrapper.readString() + " READABLE BYTES: " + tempBuf.readableBytes());
 	}
 
 	private static void print(String name, ByteBuf buf) {
@@ -61,39 +51,5 @@ public class PacketOutLoginSucces extends Packet {
 			hexChars[j * 3 + 2] = ' ';
 		}
 		return new String(hexChars);
-	}
-
-	@Override
-	public void read(PacketDataWrapper wrapper) {
-		this.uuid = wrapper.readString();
-		this.username = wrapper.readString();
-		ProxyLogger.debug("Player " + this.username + " UUID " + this.uuid.toString());
-	}
-
-	@Override
-	public void write(PacketDataWrapper wrapper) {
-		wrapper.writeString(uuid);
-		wrapper.writeString(username);
-	}
-
-	@Override
-	public void onReceive(NetworkManager networkManager, PacketReceiveEvent event) {
-		networkManager.currentState = ConnectionState.PLAY;
-	}
-
-	public String getUUID() {
-		return uuid;
-	}
-
-	public void setUUID(String uuid) {
-		this.uuid = uuid;
-	}
-
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
 	}
 }

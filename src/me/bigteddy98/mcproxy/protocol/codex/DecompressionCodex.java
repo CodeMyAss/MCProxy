@@ -20,7 +20,7 @@ package me.bigteddy98.mcproxy.protocol.codex;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.ReplayingDecoder;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
 
-public class DecompressionCodex extends ByteToMessageDecoder {
+public class DecompressionCodex extends ReplayingDecoder<Void> {
 
 	private final NetworkManager networkManager;
 
@@ -39,8 +39,6 @@ public class DecompressionCodex extends ByteToMessageDecoder {
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf buf, List<Object> out) throws Exception {
 		PacketDataWrapper compressedBuffer = new PacketDataWrapper(buf);
-		print("before", buf);
-
 		if (compressedBuffer.readableBytes() == 0) {
 			return;
 		}
@@ -51,14 +49,12 @@ public class DecompressionCodex extends ByteToMessageDecoder {
 
 		PacketDataWrapper uncompressedBuffer = new PacketDataWrapper(Unpooled.buffer());
 		if (uncompressedSize == 0) {
-			uncompressedBuffer.writeVarInt(totalSize - PacketUtils.getVarIntSize(0));
-			print("between 56 and 57", uncompressedBuffer.getBuffer());
-			
+			uncompressedBuffer.writeVarInt(dataSize);
 			byte[] array = new byte[dataSize];
 			buf.readBytes(array, 0, dataSize);
 			uncompressedBuffer.writeBytes(array, 0, dataSize);
 		} else {
-			byte[] compressedPacket = new byte[totalSize - PacketUtils.getVarIntSize(uncompressedSize)];
+			byte[] compressedPacket = new byte[dataSize];
 			compressedBuffer.readBytes(compressedPacket);
 
 			networkManager.inflater.setInput(compressedPacket);
@@ -68,7 +64,6 @@ public class DecompressionCodex extends ByteToMessageDecoder {
 			uncompressedBuffer.writeBytes(uncompressedPacket);
 			networkManager.inflater.reset();
 		}
-		print("after", uncompressedBuffer.getBuffer());
 		out.add(uncompressedBuffer.getBuffer());
 	}
 
@@ -76,6 +71,7 @@ public class DecompressionCodex extends ByteToMessageDecoder {
 		buf.markReaderIndex();
 		byte[] array = new byte[buf.readableBytes()];
 		buf.readBytes(array, 0, buf.readableBytes());
+		ProxyLogger.debug("Current bytes " + name + ": " + getHexString(array));
 		buf.resetReaderIndex();
 	}
 

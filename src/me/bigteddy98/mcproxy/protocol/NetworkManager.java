@@ -42,7 +42,8 @@ public class NetworkManager {
 	public Deflater deflater = new Deflater();
 	public Inflater inflater = new Inflater();
 	public int compressionThreshold = -1;
-	public boolean hasCompressionEnabled = false;
+	public boolean clientsideCompressionEnabled = false;
+	public boolean serversideCompressionEnabled = false;
 
 	public ChannelPipeline serversideHandler;
 	public ChannelPipeline clientsideHandler;
@@ -148,11 +149,21 @@ public class NetworkManager {
 	}
 
 	public void enableServerSideCompression() {
+		if(this.serversideCompressionEnabled){
+			return;
+		}
+		this.serversideCompressionEnabled = true;
+		ProxyLogger.info("Serversided compression threshold is now set to " + this.compressionThreshold);
 		this.serversideHandler.addBefore("serverbound_proxy_codex", "decompression_codex", new DecompressionCodex(this));
 		this.serversideHandler.addBefore("serverbound_proxy_codex", "compression_codex", new CompressionCodex(this));
 	}
 	
 	public void enableClientSideCompression(){
+		if(this.clientsideCompressionEnabled){
+			return;
+		}
+		this.clientsideCompressionEnabled = true;
+		ProxyLogger.info("Clientsided compression threshold is now set to " + this.compressionThreshold);
 		this.clientsideHandler.addBefore("clientbound_proxy_codex", "decompression_codex", new DecompressionCodex(this));
 		this.clientsideHandler.addBefore("clientbound_proxy_codex", "compression_codex", new CompressionCodex(this));
 	}

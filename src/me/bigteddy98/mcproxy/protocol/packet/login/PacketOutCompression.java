@@ -17,7 +17,6 @@
  */
 package me.bigteddy98.mcproxy.protocol.packet.login;
 
-import me.bigteddy98.mcproxy.ProxyLogger;
 import me.bigteddy98.mcproxy.protocol.NetworkManager;
 import me.bigteddy98.mcproxy.protocol.packet.Packet;
 import me.bigteddy98.mcproxy.protocol.packet.PacketDataWrapper;
@@ -48,25 +47,17 @@ public class PacketOutCompression extends Packet {
 	public void onReceive(NetworkManager networkManager, PacketReceiveEvent event) {
 		networkManager.compressionThreshold = this.threshold;
 		if (this.threshold != -1) {
-			if(networkManager.hasCompressionEnabled){
-				return;
-			}
 			networkManager.enableServerSideCompression();
-			networkManager.hasCompressionEnabled = true;
 		} else {
-			networkManager.hasCompressionEnabled = false;
 			//TODO disable compression
 		}
-		ProxyLogger.info("Compression threshold is now set to " + this.threshold);
 	}
 	
 	@Override
 	public void onSend(NetworkManager networkManager) {
 		if (this.threshold != -1) {
 			networkManager.enableClientSideCompression();
-			networkManager.hasCompressionEnabled = true;
 		} else {
-			networkManager.hasCompressionEnabled = false;
 			//TODO disable compression
 		}
 	}

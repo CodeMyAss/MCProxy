@@ -1,10 +1,22 @@
 MCProxy Software
 
-GLOBAL INFORMATION
+Global Information
 =========
-MCProxy is a very advanced Minecraft server proxy I am currently working on. The project is currently using protocol version 47, which means that only Minecraft 1.8 clients will be able to connect. The project is far from finished so you can't really use it for something useful yet.
+MCProxy is a very advanced Minecraft server proxy I am currently working on.
+The project is currently using protocol version 47, which means that only Minecraft 1.8 clients will be able to connect.
+The project is far from finished so you can't really use it for something useful yet.
 
-LICENSE
+How does it work?
+=========
+Basically, MCProxy is a wrapper for the normal Vanilla MC server which allows you to install plugins. The MCProxy is able to use the command line as well as the packets sent through the players connection.
+By combining these two possibilities, the MCProxy is able to do almost the same as a, for example, Bukkit plugin.
+
+Which advantages does it have?
+=========
+The MCProxy uses the normal Vanilla server jar, but without using any Vanilla code. This is how we are able to use the Vanilla server, without having any problems with copyright claims.
+Another advantage is how updating works. Normally when the Vanilla server updates, almost all custom jars have to be completely rewritten. But MCProxy only requires a few small protocol updates.
+
+License
 =========
 The project is currently licensed under the GNU General Public License.
 The text version of the license can be found in the LICENSE.txt file.
